@@ -289,7 +289,11 @@ defmodule Kino do
   def animate(interval_ms, state, fun) when is_integer(interval_ms) and is_function(fun, 2) do
     frame = Kino.Frame.new()
 
-    Kino.Frame.periodically(frame, interval_ms, {0, state}, fn {i, state} ->
+    stream =
+      Stream.interval(interval_ms)
+      |> Stream.take(interval_ms)
+
+    listen(stream, {0, state}, fn {i, state} ->
       case safe_apply(fun, [i, state], "Kino.animate") do
         {:ok, {:cont, term, state}} ->
           Kino.Frame.render(frame, term)
